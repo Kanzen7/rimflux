@@ -1,0 +1,19 @@
+# Built-in defaults. Copy to your user configuration directory; see README.
+[appearance]
+theme = "dark"
+accent = "dynamic"
+reduced_motion = false
+
+[notch]
+default_mode = "clock"
+auto_collapse = true
+
+[music]
+enable_waveform = true
+waveform_style = "layered"
+
+[monitoring]
+refresh_interval_ms = 1000
+
+[development]
+demo_mode = true
