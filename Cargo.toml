@@ -7,7 +7,8 @@ description = "A native, top-edge desktop companion built with Rust and iced"
 publish = false
 
 [dependencies]
-iced = { version = "0.14.0", default-features = false, features = ["wgpu", "canvas", "tokio", "wayland", "x11"] }
+iced = { version = "0.14.0", default-features = false, features = ["wgpu", "canvas", "tokio", "wayland", "x11", "image-without-codecs", "svg", "advanced"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 chrono = { version = "0.4.42", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
 toml = "0.9"
@@ -15,10 +16,10 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 sysinfo = { version = "0.38.4", default-features = false, features = ["system", "network"] }
 thiserror = "2"
-tokio = { version = "1", features = ["rt"] }
+tokio = { version = "1", features = ["rt", "sync"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging", "Win32_UI_HiDpi"] }
+windows = { version = "0.62.2", features = ["Foundation", "Media_Control", "Storage_Streams", "Management_Deployment", "ApplicationModel", "Win32_System_WinRT", "Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Graphics_Dwm", "Win32_UI_WindowsAndMessaging", "Win32_UI_HiDpi", "Win32_UI_Accessibility", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_System_LibraryLoader", "Win32_System_Registry", "Win32_Media_Audio", "Win32_Media_KernelStreaming", "Win32_Media_Multimedia", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_Variant", "Win32_System_Threading", "Win32_Security"] }
 raw-window-handle = "0.6"
 
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -29,3 +30,6 @@ wayland-client = "0.31.15"
 lto = "thin"
 codegen-units = 1
 strip = "debuginfo"
+
+[dev-dependencies]
+resvg = { version = "0.45", default-features = false, features = ["raster-images"] }

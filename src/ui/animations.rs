@@ -1,7 +1,7 @@
 use iced::Size;
 use std::time::{Duration, Instant};
 
-pub const TRANSITION_DURATION: Duration = Duration::from_millis(280);
+pub const TRANSITION_DURATION: Duration = Duration::from_millis(320);
 
 #[derive(Debug, Clone)]
 pub struct Transition {
@@ -38,7 +38,7 @@ impl Transition {
     }
 
     pub fn size(&self, now: Instant) -> Size {
-        let t = self.progress(now);
+        let t = (self.progress(now) / 0.78).min(1.0);
         let horizontal = smooth(t);
         let vertical = smooth(((t - 0.22) / 0.78).clamp(0.0, 1.0));
         Size::new(
@@ -48,7 +48,7 @@ impl Transition {
     }
 
     pub fn opacity(&self, now: Instant) -> f32 {
-        smooth(((self.progress(now) - 0.45) / 0.55).clamp(0.0, 1.0))
+        smooth(((self.progress(now) - 0.78) / 0.22).clamp(0.0, 1.0))
     }
     pub fn tick(&mut self, now: Instant) {
         if self.progress(now) >= 1.0 {

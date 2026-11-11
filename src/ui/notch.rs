@@ -3,8 +3,8 @@ use iced::{Point, Size, widget::canvas::Path};
 /// Shared silhouette for Canvas, Win32 shaping, and Wayland input regions.
 pub fn outline(size: Size) -> Vec<Point> {
     let (w, h) = (size.width, size.height);
-    let shoulder = 12.0_f32.min(h * 0.4);
-    let radius = 18.0_f32.min((h - shoulder) * 0.75);
+    let shoulder = 13.0_f32.min(h * 0.4);
+    let radius = 12.0_f32.min((h - shoulder) * 0.75);
     let mut points = vec![Point::ORIGIN];
     cubic(
         &mut points,

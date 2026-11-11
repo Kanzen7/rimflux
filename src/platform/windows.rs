@@ -4,6 +4,7 @@ use iced::{Point, Size, Task, window};
 use raw_window_handle::RawWindowHandle;
 use windows::Win32::{
     Foundation::{HWND, POINT},
+    Graphics::Dwm::{DWMWA_BORDER_COLOR, DWMWA_COLOR_NONE, DwmSetWindowAttribute},
     Graphics::Gdi::{
         CreatePolygonRgn, DeleteObject, GetMonitorInfoW, MONITOR_DEFAULTTONEAREST, MONITORINFO,
         MonitorFromWindow, SetWindowRgn, WINDING,
@@ -11,8 +12,10 @@ use windows::Win32::{
     UI::{
         HiDpi::GetDpiForWindow,
         WindowsAndMessaging::{
-            GWL_EXSTYLE, GetWindowLongPtrW, HWND_TOPMOST, SWP_NOACTIVATE, SetWindowLongPtrW,
-            SetWindowPos, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+            GWL_EXSTYLE, GWL_STYLE, GetWindowLongPtrW, HWND_TOPMOST, SW_HIDE, SW_SHOWNOACTIVATE,
+            SWP_FRAMECHANGED, SWP_NOACTIVATE, SetWindowLongPtrW, SetWindowPos, ShowWindow,
+            WS_BORDER, WS_CAPTION, WS_EX_APPWINDOW, WS_EX_CLIENTEDGE, WS_EX_STATICEDGE,
+            WS_EX_TOOLWINDOW, WS_EX_WINDOWEDGE, WS_THICKFRAME,
         },
     },
 };
@@ -33,17 +36,19 @@ impl WindowAdapter for WindowsWindow {
             transparent: true,
             resizable: false,
             level: window::Level::AlwaysOnTop,
+            visible: false,
+            exit_on_close_request: false,
             platform_specific: window::settings::PlatformSpecific {
                 skip_taskbar: !self.inspect,
                 drag_and_drop: false,
+                undecorated_shadow: false,
                 corner_preference: window::settings::platform::CornerPreference::DoNotRound,
-                ..Default::default()
             },
             ..Default::default()
         }
     }
 
-    fn synchronize(&self, id: window::Id, size: Size) -> Task<Message> {
+    fn synchronize(&self, id: window::Id, size: Size, reveal: bool) -> Task<Message> {
         let inspect = self.inspect;
         window::run(id, move |window| {
             let Ok(handle) = window.window_handle() else {
@@ -53,6 +58,7 @@ impl WindowAdapter for WindowsWindow {
                 return DisplayInfo::default();
             };
             let hwnd = HWND(handle.hwnd.get() as *mut std::ffi::c_void);
+            super::windows_desktop::set_notch(hwnd);
             // SAFETY: iced provides a live HWND on its event-loop thread. No pointer is retained.
             // GDI owns the region only after successful SetWindowRgn; failure frees it here.
             unsafe {
@@ -66,6 +72,9 @@ impl WindowAdapter for WindowsWindow {
                     tracing::warn!(
                         "GetMonitorInfoW failed; keeping bounded window in its current location"
                     );
+                    if reveal {
+                        let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+                    }
                     return DisplayInfo::default();
                 }
                 let width = (size.width * scale).ceil() as i32;
@@ -78,7 +87,28 @@ impl WindowAdapter for WindowsWindow {
                 } else {
                     (style | WS_EX_TOOLWINDOW.0 as isize) & !(WS_EX_APPWINDOW.0 as isize)
                 };
+                let style =
+                    style & !((WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE).0 as isize);
                 SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style);
+                // winit retains some non-client styles even for undecorated windows.
+                // Remove their border metrics so the client pixels meet the monitor edge.
+                let native_style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+                let borderless =
+                    native_style & !((WS_BORDER | WS_CAPTION | WS_THICKFRAME).0 as isize);
+                let frame_flags = if native_style != borderless {
+                    SetWindowLongPtrW(hwnd, GWL_STYLE, borderless);
+                    SWP_FRAMECHANGED
+                } else {
+                    Default::default()
+                };
+                // Windows 11's DWM border is independent of the Canvas silhouette.
+                // Older Windows versions may not support this attribute.
+                let _ = DwmSetWindowAttribute(
+                    hwnd,
+                    DWMWA_BORDER_COLOR,
+                    (&DWMWA_COLOR_NONE as *const u32).cast(),
+                    std::mem::size_of::<u32>() as u32,
+                );
                 if let Err(error) = SetWindowPos(
                     hwnd,
                     Some(HWND_TOPMOST),
@@ -86,7 +116,7 @@ impl WindowAdapter for WindowsWindow {
                     info.rcMonitor.top,
                     width,
                     height,
-                    SWP_NOACTIVATE,
+                    SWP_NOACTIVATE | frame_flags,
                 ) {
                     tracing::warn!(%error, "Native top-edge positioning failed");
                 }
@@ -108,6 +138,9 @@ impl WindowAdapter for WindowsWindow {
                         "Cannot apply notch region; bounded rectangular hit area remains"
                     );
                 }
+                if reveal {
+                    let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+                }
                 DisplayInfo {
                     width: (info.rcMonitor.right - info.rcMonitor.left) as f32 / scale,
                     height: (info.rcMonitor.bottom - info.rcMonitor.top) as f32 / scale,
@@ -116,5 +149,22 @@ impl WindowAdapter for WindowsWindow {
             }
         })
         .map(Message::Display)
+    }
+
+    fn visibility(&self, id: window::Id, visible: bool) -> Task<Message> {
+        window::run(id, move |window| {
+            if let Ok(handle) = window.window_handle()
+                && let RawWindowHandle::Win32(handle) = handle.as_raw()
+            {
+                // iced supplies the live window on its own event-loop thread.
+                unsafe {
+                    let _ = ShowWindow(
+                        HWND(handle.hwnd.get() as *mut _),
+                        if visible { SW_SHOWNOACTIVATE } else { SW_HIDE },
+                    );
+                }
+            }
+        })
+        .discard()
     }
 }

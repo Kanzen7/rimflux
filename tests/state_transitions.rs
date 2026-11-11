@@ -14,7 +14,7 @@ use std::time::{Duration, Instant};
 #[test]
 fn all_five_states_reach_their_logical_geometry() {
     let start = Instant::now();
-    let mut state = AppState::new(Config::default(), start);
+    let mut state = AppState::new(demo_config(), start);
     for (index, (mode, expansion)) in [
         (Clock, Compact),
         (Music, Compact),
@@ -37,7 +37,7 @@ fn all_five_states_reach_their_logical_geometry() {
 #[test]
 fn playback_uses_elapsed_monotonic_time_and_pause_is_stable() {
     let start = Instant::now();
-    let mut state = AppState::new(Config::default(), start);
+    let mut state = AppState::new(demo_config(), start);
     state.advance(start + Duration::from_millis(2500));
     assert_eq!(state.music.position, 86.5);
     state.action(
@@ -51,7 +51,7 @@ fn playback_uses_elapsed_monotonic_time_and_pause_is_stable() {
 
 #[test]
 fn media_navigation_shuffle_repeat_and_seek_respond() {
-    let mut music = rimflux::modules::music::MusicInfo::default();
+    let mut music = rimflux::modules::music::MusicInfo::demo();
     music.command(MediaCommand::Next);
     assert_eq!(music.title, "Every Summertime");
     music.command(MediaCommand::Previous);
@@ -76,24 +76,24 @@ fn media_navigation_shuffle_repeat_and_seek_respond() {
 #[test]
 fn hidden_and_paused_waveforms_have_no_frame_subscription() {
     let start = Instant::now();
-    let mut state = AppState::new(Config::default(), start);
+    let mut state = AppState::new(demo_config(), start);
     assert!(state.frame_interval().is_none());
     state.action(Action::Select(Music, Compact), start);
     state.advance(start + TRANSITION_DURATION);
-    assert!(state.frame_interval().is_some());
+    assert!(state.frame_interval().is_some()); // Visible, playing procedural waveform.
     state.action(
         Action::Media(MediaCommand::PlayPause),
         start + TRANSITION_DURATION,
     );
     assert!(state.frame_interval().is_none());
-    let phase = state.phase;
+    let phase = state.waveform.animation.phase;
     state.advance(start + Duration::from_secs(3));
-    assert_eq!(state.phase, phase);
+    assert_eq!(state.waveform.animation.phase, phase);
 }
 
 #[test]
 fn reduced_motion_snaps_geometry_and_disables_wave_animation() {
-    let mut config = Config::default();
+    let mut config = demo_config();
     config.appearance.reduced_motion = true;
     let now = Instant::now();
     let mut state = AppState::new(config, now);
@@ -105,7 +105,7 @@ fn reduced_motion_snaps_geometry_and_disables_wave_animation() {
 #[test]
 fn expansion_grows_width_before_height_and_can_be_retargeted() {
     let now = Instant::now();
-    let mut state = AppState::new(Config::default(), now);
+    let mut state = AppState::new(demo_config(), now);
     state.action(Action::Select(Music, Expanded), now);
     state.advance(now + Duration::from_millis(50));
     assert!(state.size().width > 116.0);
@@ -123,7 +123,7 @@ fn expansion_grows_width_before_height_and_can_be_retargeted() {
 #[test]
 fn auto_collapse_waits_for_pointer_leave_and_respects_preference() {
     let now = Instant::now();
-    let mut state = AppState::new(Config::default(), now);
+    let mut state = AppState::new(demo_config(), now);
     state.action(Action::Select(Music, Expanded), now);
     state.action(Action::Hover(true), now);
     state.advance(now + Duration::from_secs(12));
@@ -142,16 +142,18 @@ fn auto_collapse_waits_for_pointer_leave_and_respects_preference() {
 #[test]
 fn click_targets_activate_controls_without_collapsing_music() {
     let now = Instant::now();
-    let mut state = AppState::new(Config::default(), now);
+    let mut state = AppState::new(demo_config(), now);
     state.action(Action::Select(Music, Expanded), now);
-    let action = hit_action(&state, iced::Point::new(340.0, 58.0));
+    let now = now + TRANSITION_DURATION;
+    state.advance(now); // Seeking is intentionally disabled during a notch transition.
+    let action = hit_action(&state, iced::Point::new(281.0, 103.0));
     state.action(action, now);
     assert!(!state.music.playing);
     assert_eq!(state.expansion, Expanded);
-    state.action(hit_action(&state, iced::Point::new(228.0, 80.0)), now);
+    state.action(hit_action(&state, iced::Point::new(284.0, 58.5)), now);
     assert!((state.music.progress() - 0.5).abs() < 0.001);
     state.action(hit_action(&state, iced::Point::new(424.0, 24.0)), now);
-    assert!(state.more);
+    assert_eq!(state.panel, Some(rimflux::core::state::Panel::Menu));
 }
 
 #[test]
@@ -199,7 +201,7 @@ fn monitoring_history_is_bounded_and_zero_memory_is_safe() {
 fn partial_config_defaults_and_invalid_values_are_rejected() {
     let partial = Config::parse("[appearance]\nreduced_motion = true").unwrap();
     assert!(partial.appearance.reduced_motion);
-    assert!(partial.development.demo_mode);
+    assert!(!partial.development.demo_mode);
     assert_eq!(partial.monitoring.refresh_interval_ms, 1000);
     for invalid in [
         "[",
@@ -216,10 +218,16 @@ fn partial_config_defaults_and_invalid_values_are_rejected() {
 
 #[test]
 fn disabling_demo_never_exposes_fabricated_media_as_live() {
-    let mut config = Config::default();
+    let mut config = demo_config();
     config.development.demo_mode = false;
     let mut state = AppState::new(config, Instant::now());
     assert!(!state.music.available);
     state.action(Action::Media(MediaCommand::PlayPause), Instant::now());
     assert!(!state.music.playing);
+}
+
+fn demo_config() -> Config {
+    let mut config = Config::default();
+    config.development.demo_mode = true;
+    config
 }

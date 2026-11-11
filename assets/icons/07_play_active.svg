@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none" role="img" aria-label="Active circular play button">
+<desc>Active circular play button — Rimflux Music UI. Editable vector shapes, transparent background.</desc>
+
+<circle cx="28" cy="28" r="25.2" fill="#C6CBDE" fill-opacity="0.17" stroke="#D6DAE9" stroke-opacity="0.7" stroke-width="1.9"/>
+<circle cx="28" cy="28" r="22.8" stroke="#FFF" stroke-opacity="0.08" stroke-width="1.1"/>
+<path d="M22 16.8C22 16 22.9 15.5 23.6 15.9L39.5 26.7C40.5 27.4 40.5 28.6 39.5 29.3L23.6 40.1C22.9 40.5 22 40 22 39.2V16.8Z" fill="#F2F2FA"/>
+</svg>

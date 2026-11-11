@@ -8,12 +8,79 @@ reduced_motion = false
 default_mode = "clock"
 auto_collapse = true
 
+[navigation]
+# Without explicit values, use notch.default_mode and music.auto_switch.
+# startup_mode = "clock"
+# mode_selection = "auto"
+restore_last_mode = false
+
+[visibility]
+policy = "smart"
+hide_maximized_browsers = true
+hide_fullscreen = true
+hide_other_maximized_apps = false
+allow_temporary_peek = true
+peek_seconds = 8
+hide_debounce_ms = 200
+show_debounce_ms = 350
+
+[interaction]
+global_shortcut = "Ctrl+Alt+R"
+compact_click_expands = true
+right_click_context_menu = true
+escape_collapses = true
+
+[general]
+start_with_windows = false
+keep_running_in_tray = true
+
 [music]
 enable_waveform = true
 waveform_style = "layered"
+auto_switch = true
+idle_delay_secs = 8
+# source_app_id = "exact SourceAppUserModelId from --media-probe / debug logs"
+
+# Runtime waveform is the only playback timeline. Legacy enable_waveform above
+# remains a master switch for existing user configurations.
+[music.waveform]
+enabled = true
+style = "layered"
+mode = "hybrid" # procedural, reactive, hybrid; unavailable capture falls back to procedural
+live_audio = true # system-output loopback, only while visible music is playing
+compact_max_height = 14
+expanded_max_height = 25
+animation_speed = 1.0
+intensity = 0.55
+glow = 0.20
+interactive_seek = true
+
+[music.waveform.beat_orb]
+enabled = true
+sensitivity = 0.65
+minimum_core_diameter = 3.0
+maximum_core_diameter = 6.0
+minimum_halo_diameter = 12.0
+maximum_halo_diameter = 22.0
+attack_ms = 20
+peak_hold_ms = 10
+release_ms = 140
+cooldown_ms = 85
+low_threshold = 0.25
+strong_threshold = 0.60
+very_strong_threshold = 0.85
+
+[music.waveform.reactivity]
+enabled = true
+bass_sensitivity = 0.65
+mid_sensitivity = 0.70
+high_sensitivity = 0.80
+transient_sensitivity = 0.75
+micro_ripples = true
+adaptive_normalization = true
 
 [monitoring]
 refresh_interval_ms = 1000
 
 [development]
-demo_mode = true
+demo_mode = false

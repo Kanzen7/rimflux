@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" role="img" aria-label="Repeat">
+<desc>Repeat — Rimflux Music UI. Editable vector shapes, transparent background.</desc>
+
+<g stroke="#F2F2FA" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+<path d="M5 12V11.1A5.1 5.1 0 0 1 10.1 6H25.5"/>
+<path d="M21.3 1.8L25.5 6L21.3 10.2"/>
+<path d="M27 20V20.9A5.1 5.1 0 0 1 21.9 26H6.5"/>
+<path d="M10.7 21.8L6.5 26L10.7 30.2"/>
+</g>
+</svg>
