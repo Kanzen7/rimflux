@@ -1,5 +1,5 @@
 use iced::Color;
-pub const BASE: Color = Color::from_rgb8(11, 11, 15);
+pub const BASE: Color = Color::BLACK;
 pub const SURFACE: Color = Color::from_rgb8(21, 21, 27);
 pub const ELEVATED: Color = Color::from_rgb8(30, 30, 38);
 pub const TEXT: Color = Color::from_rgb8(244, 244, 247);

@@ -1,5 +1,10 @@
 pub mod animations;
+pub mod compact_playback;
+pub mod desktop;
+pub mod icons;
 pub mod layout;
+pub mod music_layout;
 pub mod notch;
 pub mod theme;
+mod wave_reference;
 pub mod waveform;

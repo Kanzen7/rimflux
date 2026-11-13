@@ -4,7 +4,7 @@ use iced::{Size, Task, window};
 /// Lifecycle and logical-size boundary. Native adapters own physical DPI conversion.
 pub trait WindowAdapter {
     fn settings(&self, size: Size) -> window::Settings;
-    fn synchronize(&self, id: window::Id, size: Size) -> Task<Message>;
+    fn synchronize(&self, id: window::Id, size: Size, reveal: bool) -> Task<Message>;
     fn visibility(&self, id: window::Id, visible: bool) -> Task<Message> {
         window::set_mode(
             id,
@@ -32,7 +32,7 @@ impl WindowAdapter for PortableWindow {
             ..Default::default()
         }
     }
-    fn synchronize(&self, id: window::Id, size: Size) -> Task<Message> {
+    fn synchronize(&self, id: window::Id, size: Size, _: bool) -> Task<Message> {
         window::resize(id, size)
     }
 }

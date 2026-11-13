@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="32" viewBox="0 0 640 32" fill="none" role="img" aria-label="Music progress seek bar">
+<desc>Music progress seek bar — Rimflux Music UI. Editable vector shapes, transparent background.</desc>
+
+<rect x="0" y="13.5" width="640" height="5" rx="2.5" fill="#54586A" fill-opacity="0.8"/>
+<rect x="0" y="13.5" width="196" height="5" rx="2.5" fill="#F0F1F7"/>
+<circle cx="196" cy="16" r="9" fill="#F6F7FC"/>
+<circle cx="196" cy="16" r="12" fill="#F6F7FC" fill-opacity="0.10"/>
+</svg>

@@ -3,6 +3,12 @@ pub mod linux;
 pub mod traits;
 #[cfg(target_os = "windows")]
 pub mod windows;
+#[cfg(target_os = "windows")]
+pub mod windows_audio;
+#[cfg(target_os = "windows")]
+pub mod windows_desktop;
+#[cfg(target_os = "windows")]
+pub mod windows_media;
 
 use crate::{
     app::Rimflux,
@@ -88,7 +94,10 @@ pub fn shortcut(
         Key::Character(value) if modifiers.control() && value.eq_ignore_ascii_case("q") => {
             Some(Message::Quit)
         }
-        Key::Named(Named::Escape) => Some(Message::Action(Action::Collapse)),
+        Key::Named(Named::Escape) => Some(Message::Action(Action::Escape)),
+        Key::Named(Named::F10 | Named::ContextMenu) => Some(Message::Action(Action::OpenPanel(
+            crate::core::state::Panel::Menu,
+        ))),
         Key::Named(Named::Enter) => Some(Message::Action(Action::ToggleExpansion)),
         Key::Named(Named::Space) => Some(Message::Action(Action::Media(
             crate::modules::music::MediaCommand::PlayPause,

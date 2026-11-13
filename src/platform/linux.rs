@@ -27,7 +27,7 @@ impl WindowAdapter for LayerWindow {
         }
     }
     // The layer runtime handles size/input requests below, outside winit.
-    fn synchronize(&self, _: window::Id, _: Size) -> Task<Message> {
+    fn synchronize(&self, _: window::Id, _: Size, _: bool) -> Task<Message> {
         Task::none()
     }
 }

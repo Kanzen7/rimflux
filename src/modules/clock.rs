@@ -15,7 +15,7 @@ impl ClockProvider for LocalClock {
         let now = chrono::Local::now();
         ClockInfo {
             time: now.format("%H:%M").to_string(),
-            date: now.format("%A, %d %B").to_string(),
+            date: now.format("%A, %d %B %Y").to_string(),
         }
     }
 }
