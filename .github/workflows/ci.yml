@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -27,5 +27,17 @@ jobs:
       - run: cargo check --locked --all-targets
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
-      - run: cargo build --locked --release
+      - run: cargo build --locked --release --bin rimflux
+      - name: Package Linux executable
+        if: runner.os == 'Linux'
+        run: |
+          ./target/release/rimflux --help
+          tar -czf rimflux-linux-x86_64.tar.gz -C target/release rimflux
+      - name: Upload Linux executable
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rimflux-linux-x86_64
+          path: rimflux-linux-x86_64.tar.gz
+          if-no-files-found: error
       # Compilation/tests do not establish native compositor or Win32 acceptance.

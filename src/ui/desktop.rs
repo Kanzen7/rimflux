@@ -110,7 +110,7 @@ fn menu(state: &AppState) -> Element<'_, Message> {
         let icon = svg(mode_icon(mode))
             .width(17)
             .height(17)
-            .opacity(if selected { 1.0 } else { 0.62 });
+            .opacity(if selected { 1.0_f32 } else { 0.62 });
         modes = modes.push(
             button(
                 row![
